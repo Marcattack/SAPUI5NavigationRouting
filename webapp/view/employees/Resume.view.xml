@@ -5,7 +5,7 @@
     xmlns:f="sap.ui.layout.form"
     busyIndicatorDelay="0">
     <Page
-        title="{i18n>RemuseOf} {FirstName} {LastName}"
+        title="{i18n>ResumeOf} {FirstName} {LastName}"
         id="employeeResumePage"
         showNavButton="true"
         navButtonPress="onNavBack"
