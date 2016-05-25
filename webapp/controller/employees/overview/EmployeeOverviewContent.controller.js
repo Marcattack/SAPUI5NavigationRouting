@@ -32,10 +32,19 @@ sap.ui.define([
 				this._applySearchFilter(this._oRouterArgs.query.search)
 				// sorting via URL hash
 				this._applySorter(this._oRouterArgs.query.sortField, this._oRouterArgs.query.sortDescending);
+				// show dialog via URL hash
+				if (!!this._oRouterArgs.query.showDialog) { // convertion implicite de 1 en booléen
+					this._oVSD.open();
+					// make sure the dialog does not get closed automatically
+					oEvent.preventDefault();
+				}
 			}
 		},
         onSortButtonPressed : function (oEvent) {
-            this._oVSD.open();
+            var oRouter = this.getRouter();
+			this._oRouterArgs.query.showDialog = 1;
+			oRouter.navTo("employeeOverview", this._oRouterArgs);
+			//this._oVSD.open();
         },
         onSearchEmployeesTable : function (oEvent) {
 			var oRouter = this.getRouter();
@@ -59,9 +68,14 @@ sap.ui.define([
 				confirm: function (oEvent) {
 					var oSortItem = oEvent.getParameter("sortItem");
 					this._oRouterArgs.query.sortField = oSortItem.getKey();
-					this._oRouterArgs.query.sortDescending = oEvent.getParameter("sortDescending") 
-					oRouter.navTo("employeeOverview", this._oRouterArgs, false /*without history*/)
-					this._applySorter(oSortItem.getKey(), oEvent.getParameter("sortDescending"));
+					this._oRouterArgs.query.sortDescending = oEvent.getParameter("sortDescending")
+					delete this._oRouterArgs.query.showDialog; // supprime l'URL show Dialog 
+					oRouter.navTo("employeeOverview", this._oRouterArgs, true /*without history*/)
+					//this._applySorter(oSortItem.getKey(), oEvent.getParameter("sortDescending"));
+				}.bind(this),
+				cancel: function (oEvent) {
+					delete this._oRouterArgs.query.showDialog;
+					oRouter.navTo("employeeOverview", this._oRouterArgs, true /*without history*/);
 				}.bind(this)
 			});
 			// init sorting (with simple sorters as custom data for all fields)
