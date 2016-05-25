@@ -7,20 +7,49 @@ sap.ui.define([
 	"use strict";
 	return BaseController.extend("sap.ui.demo.nav.controller.employees.overview.EmployeeOverviewContent", {
         onInit: function () {
+			// obtient la route depuis BaseController 
+			var oRouter = this.getRouter();
+			
             this._oTable = this.getView().byId("employeesTable");
             this._oVSD = null;
             this._sSortField = null;
             this._bSortDescending = false;
             this._aValidSortFields = ["EmployeeID", "FirstName", "LastName"];
             this._sSearchQuery = null;
+			this._oRouterArgs = null; // initialise à null les arguments de la route
             this._initViewSettingsDialog();
+			// make the search bookmarkable
+			oRouter.getRoute("employeeOverview").attachMatched(this._onRouteMatched, this);
         },
+		// Evénement levé lorque la route match avec l'URL
+		_onRouteMatched : function (oEvent) {
+			// save the current query state
+			this._oRouterArgs = oEvent.getParameter("arguments"); // obtient les paramètres à la fin de l'URL
+			this._oRouterArgs.query = this._oRouterArgs["?query"] || {}; // obtient l'argument défini ou vide
+			delete this._oRouterArgs["?query"]; // supprime ?query de la variable _oRouterArgs car copié dans query
+			if (this._oRouterArgs.query) {
+				// search/filter via URL hash
+				this._applySearchFilter(this._oRouterArgs.query.search)
+			}
+		},
         onSortButtonPressed : function (oEvent) {
             this._oVSD.open();
         },
         onSearchEmployeesTable : function (oEvent) {
+			var oRouter = this.getRouter();
+			// update the hash with the current search term
+			// (exemple: index.html#/employees/overview
+			//		  => index.html#/employees/overview?search=an 
+			this._oRouterArgs.query.search = oEvent.getSource().getValue();
+			// renvoie vers la route pour faire une nouvelle navigation avec le paramètre
+			// va faire lever l'événement _onRouteMatched qui a été ajouter à onInit()
+			oRouter.navTo("employeeOverview", this._oRouterArgs, true /*no history*/);
+			
+			/*
+			En récupérant directement la valeur de la textbox
             var sQuery = oEvent.getSource().getValue();
             this._applySearchFilter(oEvent.getSource().getValue());
+			*/
         },
         _initViewSettingsDialog : function () {
 			var oRouter = this.getRouter();
